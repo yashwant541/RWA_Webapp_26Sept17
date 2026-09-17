@@ -604,6 +604,11 @@ def _shortfall_group(tables):
 
 
 def _ltv(tables, country):
+    """1g LTV>80 concentration - shown exactly as the input percentage, with no
+    calculation applied to it.  Excel percentage cells arrive as fractions
+    (0.4805 -> displayed 48.05%); if a source instead stores a bare percent
+    number (48.05), it is normalised to the same fraction so the output always
+    equals the input percentage rather than 100x it."""
     tbl = tables.get("LTV80")
     if tbl is None:
         return None, "LTV>80 table missing", {}
@@ -611,7 +616,12 @@ def _ltv(tables, country):
     v = E.latest(s, tbl.months) if s else None
     if v is None:
         return None, f"{country} not in LTV table (and no Group row)", {}
-    return (v*100.0) / 100.0, "", {"ltv_raw": v, "basis": "value/100"}
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        return None, f"LTV value for {country} is not numeric", {"ltv_raw": v}
+    frac = (v / 100.0) if abs(v) > 1 else v      # percent-number -> fraction; fraction kept as-is
+    return frac, "", {"ltv_raw": v, "shown_as": f"{frac * 100:.2f}%"}
 
 
 # CCPL Volatile sheet keys countries by a 2/3-letter code (Global = portfolio).
@@ -754,7 +764,7 @@ INT_SOURCE = {
                         "sum(L2+L3, 12m) / sum(new approved, 12m)"),
     "ea_prop": ("ME EA AWC (EA) + ENR", "EA(country) / ENR denom; SME uses ENR 'ME', Wealth uses ENR 'PvB'"),
     "awc_prop": ("ME EA AWC (AWC) + ENR", "AWC(country) / ENR denom; SME uses ENR 'ME', Wealth uses ENR 'PvB'"),
-    "ltv": ("LTV > 80 Excl MIP", "country current value / 100"),
+    "ltv": ("LTV > 80 Excl MIP", "country value shown as the input %"),
     "volatile": ("CCPL Volatile by Country", "country reads its own 2/3-letter code; Global is GROUP-only"),
     "ppi_yoy": ("Property Price Index (by country)", "YoY of PPI for the country"),
     "interest_inc": ("Interest Rates (3-yr history)", "(current - 3yr avg) / 100"),

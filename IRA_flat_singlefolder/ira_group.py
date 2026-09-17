@@ -16,7 +16,7 @@ Each product's labels are split into two calculation kinds (per the GROUP spec):
         1bii = DPD%(prior month)  - DPD%(prior month - 1 quarter)
         1c   = DPD%(current)      - DPD%(current - 1 year)
     * policy rate  - SUM(L2+L3 over 12m, all) / SUM(new approved over 12m, all)
-    * LTV>80 (Secured 1g)      - the table's own 'Total' row / 100
+    * LTV>80 (Secured 1g)      - the table's own 'Total' row, shown as the input %
     * volatile (Unsecured 1g)  - the CCPL table's portfolio 'Total'/'Global' value
     * EA / AWC (SME 1e/1f, Wealth Lending 1d/1e) - SUM($ current month, all
       countries) / SUM(category ENR, current month)
@@ -267,7 +267,13 @@ def _ratio_value(tables, product, int_key) -> Optional[float]:
         if not tot or not months:
             return None
         v = tot.get(months[-1])
-        return None if v is None else float(v)     # raw Total (already a fraction)
+        if v is None:
+            return None
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return None
+        return (v / 100.0) if abs(v) > 1 else v    # shown as-is: percent-number -> fraction
 
     if int_key == "volatile":
         vol = tables.get("ccpl_volatile") or {}
@@ -647,7 +653,7 @@ def _ratio_detail(tables, product, int_key, val):
         return [("sum L2+L3 (last 12m, all countries)", round(num, 4)),
                 ("sum new approved (last 12m)", round(den, 4)), ("= ratio", _fmt_pct(val))]
     if int_key == "ltv":
-        return [("LTV>80 'Total' row (raw fraction)", _fmt_pct(val))]
+        return [("LTV>80 'Total' row (shown as the input %)", _fmt_pct(val))]
     if int_key == "volatile":
         vol = tables.get("ccpl_volatile") or {}
         g = vol.get("Total", vol.get("Global"))

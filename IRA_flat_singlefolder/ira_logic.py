@@ -524,7 +524,7 @@ def _reference_sheets(wb, S, hdr, row):
     DETc = "DPD% at current - DPD% 3m back (pp)"; DETp = "DPD% 1m back - DPD% 4m back (pp)"
     DETy = "DPD% at current - DPD% 12m back (pp)"; SHARE = "country DPD$ / sum DPD$ over in-scope countries"
     POL = "(L2+L3 over 12m) / (new approved over 12m)"; EA = "latest EA $ / latest ENR"
-    AWC = "latest AWC $ / latest ENR"; LTV = "latest LTV>80 / 100"
+    AWC = "latest AWC $ / latest ENR"; LTV = "LTV>80 shown as the input %"
     VOL = "country's own CCPL code value (2/3-letter); Global is the GROUP value only"
     INT = "(current rate - 36m avg)/100"; PPI = "YoY % of Property Price Index"
     OUT = "Outlook text (Positive/Stable/Negative)"; GRD = "FCY CRG grade (leading number)"
@@ -681,7 +681,7 @@ def _reference_sheets(wb, S, hdr, row):
          "SUM(L2+L3 over 12m, all) / SUM(new approved over 12m, all)",
          "Secured/Unsec 1e, SME/Wealth 1g"),
         ("LTV>80 (Secured 1g)",
-         "the LTV>80 table's own 'Total' row (raw fraction)",
+         "the LTV>80 table's own 'Total' row, shown as the input %",
          "point-in-time, latest month"),
         ("volatile (Unsecured 1g)",
          "the CCPL table's portfolio 'Global' value",
